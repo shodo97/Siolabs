@@ -1,0 +1,219 @@
+// Prisma Schema for SioLabs Learning Platform
+// EPIC-05: Learning Experience (MVP)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// USER & AUTHENTICATION
+// ============================================
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  avatarUrl String?  @map("avatar_url")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  enrollments    Enrollment[]
+  lessonProgress LessonProgress[]
+  videoProgress  VideoProgress[]
+
+  @@map("users")
+}
+
+// ============================================
+// COURSE STRUCTURE
+// ============================================
+
+model Course {
+  id              String   @id @default(cuid())
+  title           String
+  description     String
+  thumbnailUrl    String?  @map("thumbnail_url")
+  durationMinutes Int      @map("duration_minutes")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  modules     Module[]
+  enrollments Enrollment[]
+  sessions    LiveSession[]
+
+  @@map("courses")
+}
+
+model Module {
+  id          String   @id @default(cuid())
+  courseId    String   @map("course_id")
+  title       String
+  description String?
+  objective   String?
+  order       Int
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  course      Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons     Lesson[]
+  assignments Assignment[]
+  sessions    LiveSession[]
+
+  @@index([courseId])
+  @@map("modules")
+}
+
+model Lesson {
+  id              String   @id @default(cuid())
+  moduleId        String   @map("module_id")
+  title           String
+  description     String?
+  objective       String?
+  videoUrl        String   @map("video_url")
+  durationMinutes Int      @map("duration_minutes")
+  order           Int
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  module        Module           @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  resources     Resource[]
+  progress      LessonProgress[]
+  videoProgress VideoProgress[]
+
+  @@index([moduleId])
+  @@map("lessons")
+}
+
+model Resource {
+  id        String       @id @default(cuid())
+  lessonId  String       @map("lesson_id")
+  title     String
+  type      ResourceType
+  url       String
+  createdAt DateTime     @default(now()) @map("created_at")
+
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@index([lessonId])
+  @@map("resources")
+}
+
+enum ResourceType {
+  PDF
+  SLIDE
+  CODE
+  LINK
+  OTHER
+}
+
+// ============================================
+// ENROLLMENT & PROGRESS
+// ============================================
+
+model Enrollment {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  courseId   String   @map("course_id")
+  enrolledAt DateTime @default(now()) @map("enrolled_at")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+  @@index([userId])
+  @@index([courseId])
+  @@map("enrollments")
+}
+
+model LessonProgress {
+  id          String    @id @default(cuid())
+  userId      String    @map("user_id")
+  lessonId    String    @map("lesson_id")
+  completed   Boolean   @default(false)
+  completedAt DateTime? @map("completed_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+  @@index([userId])
+  @@index([lessonId])
+  @@map("lesson_progress")
+}
+
+model VideoProgress {
+  id              String   @id @default(cuid())
+  userId          String   @map("user_id")
+  lessonId        String   @map("lesson_id")
+  positionSeconds Int      @default(0) @map("position_seconds")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+  @@index([userId])
+  @@index([lessonId])
+  @@map("video_progress")
+}
+
+// ============================================
+// ASSIGNMENTS
+// ============================================
+
+model Assignment {
+  id          String    @id @default(cuid())
+  moduleId    String    @map("module_id")
+  title       String
+  description String
+  dueDate     DateTime? @map("due_date")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  module Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  @@index([moduleId])
+  @@map("assignments")
+}
+
+// ============================================
+// LIVE SESSIONS
+// ============================================
+
+model LiveSession {
+  id              String        @id @default(cuid())
+  courseId        String        @map("course_id")
+  moduleId        String?       @map("module_id")
+  title           String
+  description     String?
+  scheduledAt     DateTime      @map("scheduled_at")
+  durationMinutes Int           @map("duration_minutes")
+  joinUrl         String?       @map("join_url")
+  recordingUrl    String?       @map("recording_url")
+  status          SessionStatus @default(SCHEDULED)
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  course Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  module Module? @relation(fields: [moduleId], references: [id], onDelete: SetNull)
+
+  @@index([courseId])
+  @@index([moduleId])
+  @@index([scheduledAt])
+  @@map("live_sessions")
+}
+
+enum SessionStatus {
+  SCHEDULED
+  LIVE
+  COMPLETED
+  CANCELLED
+}
