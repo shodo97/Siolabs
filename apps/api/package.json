@@ -12,8 +12,11 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:migrate:prod": "prisma migrate deploy",
-    "db:seed": "tsx src/db/prisma/seed.ts",
+    "db:seed": "prisma db seed",
     "db:studio": "prisma studio"
+  },
+  "prisma": {
+    "seed": "tsx src/db/prisma/seed.ts"
   },
   "dependencies": {
     "express": "^4.18.3",

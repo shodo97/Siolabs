@@ -4,7 +4,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import compression from 'compression';
 
-import { env } from './config/env.js';
+import { env, getCorsOrigins, isDevelopment } from './config/env.js';
 import { errorHandler } from './middleware/error.middleware.js';
 import { notFoundHandler } from './middleware/not-found.middleware.js';
 import { routes } from './routes/index.js';
@@ -13,12 +13,22 @@ const app = express();
 
 // Security middleware
 app.use(helmet());
+
+// CORS configuration
+const corsOrigins = getCorsOrigins();
 app.use(
   cors({
-    origin: env.CORS_ORIGIN,
+    origin: corsOrigins,
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
+
+// Log CORS config in development
+if (isDevelopment()) {
+  console.log(`🌐 CORS enabled for: ${Array.isArray(corsOrigins) ? corsOrigins.join(', ') : corsOrigins}`);
+}
 
 // Request parsing
 app.use(express.json({ limit: '10mb' }));
