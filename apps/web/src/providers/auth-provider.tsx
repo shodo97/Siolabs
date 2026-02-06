@@ -31,8 +31,10 @@ const DUMMY_USER: User = {
   avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop',
 };
 
-// Set to true to use dummy data (no API calls)
-const USE_DUMMY_DATA = true;
+// Gate dummy data behind env; default false so real API is used when backend is running
+const USE_DUMMY_DATA =
+  typeof process.env.NEXT_PUBLIC_USE_DUMMY_DATA !== 'undefined' &&
+  process.env.NEXT_PUBLIC_USE_DUMMY_DATA === 'true';
 
 interface AuthProviderProps {
   children: React.ReactNode;
@@ -69,18 +71,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return;
       }
 
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/me`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const baseUrl =
+        process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+      const response = await fetch(`${baseUrl}/auth/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (response.ok) {
-        const data = await response.json();
-        setUser(data.user);
+        const body = await response.json();
+        const userData = body.data?.user ?? body.user;
+        setUser(userData);
       } else {
         localStorage.removeItem(TOKEN_KEY);
         setUser(null);
@@ -111,27 +113,31 @@ export function AuthProvider({ children }: AuthProviderProps) {
       return;
     }
 
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      }
-    );
+    const baseUrl =
+      process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+    const response = await fetch(`${baseUrl}/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const body = await response.json();
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Login failed');
+      const message =
+        body.error?.message || body.message || 'Login failed';
+      throw new Error(message);
     }
 
-    const data = await response.json();
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(TOKEN_KEY, data.token);
+    const payload = body.data ?? body;
+    const token = payload.token;
+    const userData = payload.user;
+    if (typeof window !== 'undefined' && token) {
+      localStorage.setItem(TOKEN_KEY, token);
     }
-    setUser(data.user);
+    setUser(userData);
     router.push('/dashboard');
   };
 
@@ -146,8 +152,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       if (typeof window !== 'undefined') {
         const token = localStorage.getItem(TOKEN_KEY);
+        const baseUrl =
+          process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
         if (token) {
-          await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
+          await fetch(`${baseUrl}/auth/logout`, {
             method: 'POST',
             headers: {
               Authorization: `Bearer ${token}`,

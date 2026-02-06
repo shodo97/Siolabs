@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useAuth } from '@/hooks';
 import { useDashboard } from '@/hooks/use-dashboard';
 import {
@@ -9,6 +10,7 @@ import {
   UpcomingSessions,
 } from '@/components/dashboard';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -24,8 +26,11 @@ export default function DashboardPage() {
             Unable to load dashboard
           </p>
           <p className="mt-1 text-sm text-gray-500">
-            Please try refreshing the page.
+            Please try refreshing or sign in if you have not yet.
           </p>
+          <Button asChild variant="outline" className="mt-4">
+            <Link href="/login">Sign in</Link>
+          </Button>
         </div>
       </div>
     );

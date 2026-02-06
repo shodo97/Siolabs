@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useLesson, useUpdateVideoProgress } from '@/hooks';
 import { Breadcrumb } from '@/components/shared';
 import {
@@ -15,11 +15,11 @@ import { ROUTES } from '@/lib/constants';
 import { Lightbulb } from 'lucide-react';
 
 interface LessonPageProps {
-  params: Promise<{ courseId: string; moduleId: string; lessonId: string }>;
+  params: { courseId: string; moduleId: string; lessonId: string };
 }
 
 export default function LessonPage({ params }: LessonPageProps) {
-  const { courseId, moduleId, lessonId } = use(params);
+  const { courseId, moduleId, lessonId } = params;
   const { data: lesson, isLoading, error } = useLesson(lessonId);
   const { mutate: saveProgress } = useUpdateVideoProgress();
   const [canComplete, setCanComplete] = useState(false);
@@ -125,8 +125,8 @@ export default function LessonPage({ params }: LessonPageProps) {
         {/* Navigation */}
         <LessonNavigation
           courseId={courseId}
-          prevLesson={lesson.prevLesson}
-          nextLesson={lesson.nextLesson}
+          prevLesson={lesson.prevLesson ?? null}
+          nextLesson={lesson.nextLesson ?? null}
         />
       </div>
     </div>

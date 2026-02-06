@@ -8,6 +8,8 @@ interface DashboardResponse {
 }
 
 export async function getDashboard(): Promise<DashboardResponse> {
-  const response = await apiClient.get<{ data: DashboardResponse }>('/dashboard');
+  const response = await apiClient.get<{ success: true; data: DashboardResponse }>(
+    '/dashboard'
+  );
   return response.data;
 }

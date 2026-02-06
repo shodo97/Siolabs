@@ -133,7 +133,7 @@ Assignment Entry (F07) ← depends on F03 context
 
 ---
 
-## 5. Recommended Technology Stack
+## 5. Recommended Technology Stack 
 
 ### 5.1 Frontend
 
@@ -147,7 +147,7 @@ Assignment Entry (F07) ← depends on F03 context
 | **Zustand** | Client state management (lightweight) | [https://docs.pmnd.rs/zustand](https://docs.pmnd.rs/zustand) |
 | **React Player** | Video playback with progress tracking | [https://github.com/cookpete/react-player](https://github.com/cookpete/react-player) |
 
-### 5.2 Backend
+### 5.2 Backend 
 
 | Technology | Purpose | Documentation |
 |------------|---------|---------------|
@@ -158,7 +158,7 @@ Assignment Entry (F07) ← depends on F03 context
 | **Redis** | Caching, session storage | [https://redis.io/docs/](https://redis.io/docs/) |
 | **JWT (jsonwebtoken)** | Authentication tokens | [https://github.com/auth0/node-jsonwebtoken](https://github.com/auth0/node-jsonwebtoken) |
 
-### 5.3 Infrastructure & DevOps
+### 5.3 Infrastructure & DevOps 
 
 | Technology | Purpose | Documentation |
 |------------|---------|---------------|

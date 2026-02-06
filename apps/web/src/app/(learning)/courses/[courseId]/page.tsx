@@ -1,19 +1,49 @@
 'use client';
 
-import { use } from 'react';
+import { useEffect, useState } from 'react';
 import { useCourse } from '@/hooks';
 import { Breadcrumb } from '@/components/shared';
 import { CourseHeader, ModuleAccordion } from '@/components/course';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ROUTES } from '@/lib/constants';
+import { LessonPlayerPanel } from '@/components/learning/lesson-player-panel';
+import type { LessonSummary } from '@/types';
 
 interface CoursePageProps {
-  params: Promise<{ courseId: string }>;
+  params: { courseId: string };
 }
 
 export default function CoursePage({ params }: CoursePageProps) {
-  const { courseId } = use(params);
+  const { courseId } = params;
   const { data: course, isLoading, error } = useCourse(courseId);
+  const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
+
+  // Determine default lesson: first incomplete, otherwise first lesson of first module
+  useEffect(() => {
+    if (!course || selectedLessonId) return;
+
+    const allModules = course.modules;
+    let defaultLesson: { id: string } | null = null;
+
+    // Prefer first incomplete lesson
+    for (const module of allModules) {
+      const incomplete = module.lessons.find((l) => !l.isCompleted);
+      if (incomplete) {
+        defaultLesson = { id: incomplete.id };
+        break;
+      }
+    }
+
+    // Fallback: very first lesson
+    if (!defaultLesson) {
+      const firstModuleWithLessons = allModules.find((m) => m.lessons.length > 0);
+      if (firstModuleWithLessons) {
+        defaultLesson = { id: firstModuleWithLessons.lessons[0].id };
+      }
+    }
+
+    setSelectedLessonId(defaultLesson?.id ?? null);
+  }, [course, selectedLessonId]);
 
   if (error) {
     return (
@@ -39,35 +69,50 @@ export default function CoursePage({ params }: CoursePageProps) {
     m.lessons.some((l) => l.isCurrent)
   );
 
+  const handleLessonSelect = (lesson: LessonSummary & { moduleId: string; courseId: string }) => {
+    setSelectedLessonId(lesson.id);
+  };
+
   return (
     <div className="space-y-6">
       {/* Breadcrumb */}
       <Breadcrumb
         items={[
-          { label: 'My Courses', href: '/courses' },
+          { label: 'My Courses', href: ROUTES.COURSES },
           { label: course.title },
         ]}
       />
 
-      {/* Course Header */}
-      <CourseHeader course={course} />
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1.1fr)]">
+        {/* Left: course content */}
+        <div className="space-y-6">
+          {/* Course Header */}
+          <CourseHeader course={course} />
 
-      {/* Modules Section */}
-      <section>
-        <h2 className="mb-4 text-lg font-semibold text-gray-900">
-          Course Content
-        </h2>
-        <div className="space-y-3">
-          {course.modules.map((module, index) => (
-            <ModuleAccordion
-              key={module.id}
-              module={module}
-              courseId={course.id}
-              defaultOpen={index === currentModuleIndex || index === 0}
-            />
-          ))}
+          {/* Modules Section */}
+          <section>
+            <h2 className="mb-4 text-lg font-semibold text-gray-900">
+              Course Content
+            </h2>
+            <div className="space-y-3">
+              {course.modules.map((module, index) => (
+                <ModuleAccordion
+                  key={module.id}
+                  module={module}
+                  courseId={course.id}
+                  defaultOpen={index === currentModuleIndex || index === 0}
+                  onLessonSelect={handleLessonSelect}
+                />
+              ))}
+            </div>
+          </section>
         </div>
-      </section>
+
+        {/* Right: lesson player */}
+        <div className="lg:self-start">
+          <LessonPlayerPanel lessonId={selectedLessonId} />
+        </div>
+      </div>
     </div>
   );
 }

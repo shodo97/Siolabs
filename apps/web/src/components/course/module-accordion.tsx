@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { MouseEvent, useState } from 'react';
 import Link from 'next/link';
 import {
   ChevronDown,
@@ -22,12 +22,14 @@ interface ModuleAccordionProps {
   module: ModuleWithLessons;
   courseId: string;
   defaultOpen?: boolean;
+  onLessonSelect?: (lesson: LessonSummary & { moduleId: string; courseId: string }) => void;
 }
 
 export function ModuleAccordion({
   module,
   courseId,
   defaultOpen = false,
+  onLessonSelect,
 }: ModuleAccordionProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const isComplete = module.progress === 100;
@@ -116,6 +118,7 @@ export function ModuleAccordion({
                 lesson={lesson}
                 courseId={courseId}
                 moduleId={module.id}
+                onLessonSelect={onLessonSelect}
               />
             ))}
           </ul>
@@ -165,13 +168,22 @@ interface LessonItemProps {
   lesson: LessonSummary;
   courseId: string;
   moduleId: string;
+  onLessonSelect?: (lesson: LessonSummary & { moduleId: string; courseId: string }) => void;
 }
 
-function LessonItem({ lesson, courseId, moduleId }: LessonItemProps) {
+function LessonItem({ lesson, courseId, moduleId, onLessonSelect }: LessonItemProps) {
+  const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (onLessonSelect) {
+      event.preventDefault();
+      onLessonSelect({ ...lesson, moduleId, courseId });
+    }
+  };
+
   return (
     <li>
       <Link
-        href={ROUTES.LESSON(courseId, moduleId, lesson.id)}
+        href={onLessonSelect ? '#' : ROUTES.LESSON(courseId, moduleId, lesson.id)}
+        onClick={handleClick}
         className={cn(
           'flex items-center gap-3 px-4 py-3 transition hover:bg-gray-50',
           lesson.isCurrent && 'bg-brand-50'

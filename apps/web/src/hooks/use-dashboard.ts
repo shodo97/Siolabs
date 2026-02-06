@@ -1,11 +1,16 @@
 import { useQuery } from '@tanstack/react-query';
 import type { CourseWithProgress, UpcomingSession } from '@/types';
+import { getDashboard } from '@/lib/api/dashboard';
 
 interface DashboardData {
   courses: CourseWithProgress[];
   upcomingSessions: UpcomingSession[];
   continueLearning: CourseWithProgress | null;
 }
+
+const USE_DUMMY_DATA =
+  typeof process.env.NEXT_PUBLIC_USE_DUMMY_DATA !== 'undefined' &&
+  process.env.NEXT_PUBLIC_USE_DUMMY_DATA === 'true';
 
 // Dummy data for development
 const DUMMY_DASHBOARD_DATA: DashboardData = {
@@ -132,13 +137,35 @@ const DUMMY_DASHBOARD_DATA: DashboardData = {
   ],
 };
 
+function normalizeCourse(c: DashboardData['courses'][0]): CourseWithProgress {
+  return {
+    ...c,
+    lastAccessedAt: (c as { enrolledAt?: string }).enrolledAt ?? c.lastAccessedAt,
+  };
+}
+
 export function useDashboard() {
   return useQuery({
-    queryKey: ['dashboard'],
+    queryKey: ['dashboard', USE_DUMMY_DATA],
     queryFn: async (): Promise<DashboardData> => {
-      // Simulate network delay
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      return DUMMY_DASHBOARD_DATA;
+      if (USE_DUMMY_DATA) {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        return DUMMY_DASHBOARD_DATA;
+      }
+      const raw = await getDashboard();
+      return {
+        courses: raw.courses.map(normalizeCourse),
+        upcomingSessions: raw.upcomingSessions.map((s) => ({
+          ...s,
+          scheduledAt:
+            typeof s.scheduledAt === 'string'
+              ? s.scheduledAt
+              : (s.scheduledAt as Date).toISOString?.(),
+        })),
+        continueLearning: raw.continueLearning
+          ? normalizeCourse(raw.continueLearning)
+          : null,
+      };
     },
   });
 }

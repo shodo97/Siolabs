@@ -13,7 +13,7 @@ export const DEFAULT_PAGE_SIZE = 10;
 export const MAX_PAGE_SIZE = 50;
 
 // Video player
-export const VIDEO_SAVE_INTERVAL_MS = 5000; // Save progress every 5 seconds
+export const VIDEO_SAVE_INTERVAL_MS = 10000; // Save progress every 10 seconds
 export const VIDEO_COMPLETION_THRESHOLD = 0.8; // 80% watched = can mark complete
 
 // Progress thresholds
