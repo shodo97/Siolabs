@@ -87,8 +87,12 @@ export const isTest = () => env.NODE_ENV === 'test';
 
 /**
  * Get CORS origins as an array (supports comma-separated values)
+ * Removes trailing slashes automatically
  */
 export const getCorsOrigins = (): string | string[] => {
-  const origins = env.CORS_ORIGIN.split(',').map((o) => o.trim());
+  const origins = env.CORS_ORIGIN.split(',')
+    .map((o) => o.trim())
+    .map((o) => o.replace(/\/+$/, '')); // Remove trailing slashes
+  
   return origins.length === 1 ? origins[0] : origins;
 };
