@@ -225,7 +225,7 @@ async function main() {
   });
 
   // Module 3 Lessons (Neural Networks) - 4 lessons
-  const lesson7 = await prisma.lesson.create({
+  await prisma.lesson.create({
     data: {
       id: IDS.LESSON_NEURONS,
       moduleId: moduleNN.id,
@@ -238,7 +238,7 @@ async function main() {
     },
   });
 
-  const lesson8 = await prisma.lesson.create({
+  await prisma.lesson.create({
     data: {
       id: IDS.LESSON_ACTIVATIONS,
       moduleId: moduleNN.id,

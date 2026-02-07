@@ -27,7 +27,7 @@ export function errorHandler(
 
   // Handle Prisma errors
   if (err.name === 'PrismaClientKnownRequestError') {
-    const prismaError = err as { code: string };
+    const prismaError = err as unknown as { code: string };
     if (prismaError.code === 'P2002') {
       return sendError(res, 'Resource already exists', 'CONFLICT', 409);
     }

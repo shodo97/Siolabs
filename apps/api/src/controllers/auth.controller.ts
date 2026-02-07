@@ -47,7 +47,7 @@ export async function register(
     const token = jwt.sign(
       { userId: user.id, email: user.email },
       env.JWT_SECRET,
-      { expiresIn: env.JWT_EXPIRES_IN }
+      { expiresIn: env.JWT_EXPIRES_IN } as jwt.SignOptions
     );
 
     sendCreated(res, { user, token }, 'Registration successful');
@@ -84,7 +84,7 @@ export async function login(
     const token = jwt.sign(
       { userId: user.id, email: user.email },
       env.JWT_SECRET,
-      { expiresIn: env.JWT_EXPIRES_IN }
+      { expiresIn: env.JWT_EXPIRES_IN } as jwt.SignOptions
     );
 
     sendSuccess(res, {

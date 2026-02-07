@@ -164,6 +164,7 @@ npm run type-check       # Type check all packages
 
 ## 📖 Documentation
 
+- [Deployment Guide](/Docs/DEPLOYMENT.md) - Deploy to Vercel + Railway
 - [Implementation Plan](/Docs/Implementation.md) - Development roadmap and tasks
 - [Project Structure](/Docs/project_structure.md) - Architecture and conventions
 - [UI/UX Guidelines](/Docs/UI_UX_doc.md) - Design specifications

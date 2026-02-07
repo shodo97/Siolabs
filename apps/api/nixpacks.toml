@@ -1,0 +1,9 @@
+# Railway/Nixpacks config for SioLabs API
+# Set Root Directory to "apps/api" in Railway project settings
+# Node.js is auto-detected; we add Prisma generate and custom start
+
+[phases.build]
+cmds = ["npx prisma generate", "npm run build"]
+
+[start]
+cmd = "npm run start:prod"
