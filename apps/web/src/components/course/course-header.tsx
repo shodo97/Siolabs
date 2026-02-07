@@ -17,10 +17,10 @@ interface CourseHeaderProps {
 export function CourseHeader({ course }: CourseHeaderProps) {
   // Find current lesson
   let currentLesson: { id: string; moduleId: string } | null = null;
-  for (const module of course.modules) {
-    const lesson = module.lessons.find((l) => l.isCurrent);
+  for (const courseModule of course.modules) {
+    const lesson = courseModule.lessons.find((l) => l.isCurrent);
     if (lesson) {
-      currentLesson = { id: lesson.id, moduleId: module.id };
+      currentLesson = { id: lesson.id, moduleId: courseModule.id };
       break;
     }
   }

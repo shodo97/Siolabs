@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import { useCourse } from '@/hooks';
 import { Breadcrumb } from '@/components/shared';
 import { CourseHeader, ModuleAccordion } from '@/components/course';
@@ -10,11 +10,11 @@ import { LessonPlayerPanel } from '@/components/learning/lesson-player-panel';
 import type { LessonSummary } from '@/types';
 
 interface CoursePageProps {
-  params: { courseId: string };
+  params: Promise<{ courseId: string }>;
 }
 
 export default function CoursePage({ params }: CoursePageProps) {
-  const { courseId } = params;
+  const { courseId } = use(params);
   const { data: course, isLoading, error } = useCourse(courseId);
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
 
@@ -26,8 +26,8 @@ export default function CoursePage({ params }: CoursePageProps) {
     let defaultLesson: { id: string } | null = null;
 
     // Prefer first incomplete lesson
-    for (const module of allModules) {
-      const incomplete = module.lessons.find((l) => !l.isCompleted);
+    for (const courseModule of allModules) {
+      const incomplete = courseModule.lessons.find((l) => !l.isCompleted);
       if (incomplete) {
         defaultLesson = { id: incomplete.id };
         break;
